@@ -73,7 +73,7 @@ func ready(w http.ResponseWriter, r *http.Request) {
 func main() {
 	flag.Usage = func() {
 		fmt.Fprintf(os.Stderr, "Usage of %s:\n", os.Args[0])
-		fmt.Fprintf(os.Stderr, "\t%s -readinessTTL 30 -config config.yml\n\n", os.Args[0])
+		fmt.Fprintf(os.Stderr, "\t%s -readinessStart 30 -config config.yml\n\n", os.Args[0])
 
 		flag.PrintDefaults()
 	}
