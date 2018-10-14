@@ -14,11 +14,7 @@ const (
 // Config represent the config to use
 type Config struct {
 	Message string
-	Factor  struct {
-		min int
-		max int
-	}
-	Teams map[string][]string
+	Teams   map[string][]string
 }
 
 func (c *Config) Read(file string) (*Config, error) {
