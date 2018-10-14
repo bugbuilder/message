@@ -36,37 +36,45 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	if readiness {
 		message(w, r, &c)
 	} else {
-		glog.V(2).Infof("Endpoint is waiting for Readiness")
+		glog.V(3).Infof("Endpoint is waiting for Readiness")
 		w.WriteHeader(http.StatusServiceUnavailable)
 	}
 }
 
 func live(w http.ResponseWriter, r *http.Request) {
 	if readiness {
-		glog.V(2).Infof("Liveness probe is alive")
+		glog.V(3).Infof("Liveness probe is alive!!!")
 		w.WriteHeader(http.StatusOK)
 	} else {
-		glog.V(2).Infof("Liveness probe is waiting for Readiness")
+		glog.V(3).Infof("Liveness probe is waiting for Readiness")
 		w.WriteHeader(http.StatusServiceUnavailable)
 	}
 }
 
 func ready(w http.ResponseWriter, r *http.Request) {
+	var status Ready
 	if readiness {
-		r := Ready{
+		status = Ready{
 			"Ready",
 			"Ready",
 		}
 
-		w.Header().Set("Content-Type", "application/json")
-
-		if err := json.NewEncoder(w).Encode(r); err != nil {
-			panic(err)
-		}
-		glog.V(2).Infof("everything is going well")
+		w.WriteHeader(http.StatusOK)
+		glog.V(3).Infof("everything is going well")
 	} else {
-		glog.V(2).Infof("Readiness is working")
+		status = Ready{
+			"Unknow",
+			"Unknow",
+		}
+
+		glog.V(3).Infof("Readiness is working")
 		w.WriteHeader(http.StatusServiceUnavailable)
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+
+	if err := json.NewEncoder(w).Encode(status); err != nil {
+		panic(err)
 	}
 }
 

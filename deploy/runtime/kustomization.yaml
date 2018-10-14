@@ -1,0 +1,32 @@
+bases:
+- ../base
+
+namespace: devops
+namePrefix: dev-
+
+patchesStrategicMerge:
+  - deployment.yml
+  - service.yml
+
+configMapGenerator:
+- name: message-configmap
+  behavior: merge
+  files:
+    - config.yml
+  env: runtime.env
+
+vars:
+  - name: REDINESS_START
+    objref:
+      kind: ConfigMap
+      name: message-configmap
+      apiVersion: v1
+    fieldref:
+      fieldpath: data.REDINESS_START
+  - name: LOG_LEVEL
+    objref:
+      kind: ConfigMap
+      name: message-configmap
+      apiVersion: v1
+    fieldref:
+      fieldpath: data.LOG_LEVEL

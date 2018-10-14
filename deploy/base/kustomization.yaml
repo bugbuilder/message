@@ -1,0 +1,6 @@
+commonLabels:
+  app: message
+resources:
+  - deployment.yml
+  - service.yml
+  - configmap.yml

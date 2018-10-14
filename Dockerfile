@@ -10,7 +10,6 @@ WORKDIR /go/src/github.com/bugbuilder/message
 COPY . .
 RUN dep ensure
 RUN make build && \
-    upx --best message && \
 	mv message /usr/bin/message
 
 FROM scratch
