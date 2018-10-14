@@ -9,7 +9,9 @@ FROM build AS message
 WORKDIR /go/src/github.com/bugbuilder/message
 COPY . .
 RUN dep ensure
-RUN make build && mv message /usr/bin/message
+RUN make build && \
+    upx --best message && \
+	mv message /usr/bin/message
 
 FROM scratch
 COPY --from=message /usr/bin/message /message

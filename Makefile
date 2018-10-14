@@ -18,6 +18,6 @@ build: ## Build
 	-o $(NAME) .
 
 .PHONY: clean
-clean: ## Cleanu
+clean: ## Cleanup
 	@echo "+ $@"
 	$(RM) $(NAME)
