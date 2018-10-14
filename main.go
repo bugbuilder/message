@@ -78,6 +78,7 @@ func main() {
 		flag.PrintDefaults()
 	}
 
+	version := flag.Bool("version", false, "Print the version information")
 	cFile := flag.String("config", "", "Configuration file")
 	rStart := flag.Int("readinessStart", 10, "Readiness start seconds")
 	lReload := flag.Int("livenessReload", 10, "Liveness reload seconds")
@@ -85,13 +86,18 @@ func main() {
 
 	flag.Parse()
 
+	if *version {
+		fmt.Println(NewInfo().Print())
+		os.Exit(0)
+	}
+
 	p := os.Getenv("PORT")
 	if p == "" {
 		p = "9000"
 	}
 
 	e := os.Getenv("EXTERNAL")
-	if *cFile == "" && e == "false" {
+	if *cFile == "" && e != "true" {
 		flag.Usage()
 		os.Exit(1)
 	}
