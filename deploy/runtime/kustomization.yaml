@@ -1,8 +1,8 @@
 bases:
 - ../base
 
-namespace: devops
-namePrefix: dev-
+namespace: tester
+namePrefix: tester-
 
 patchesStrategicMerge:
   - deployment.yml
