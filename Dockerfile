@@ -12,6 +12,10 @@ RUN dep ensure
 RUN make build && \
 	mv message /usr/bin/message
 
-FROM scratch
+FROM alpine:3.8
+RUN apk add --no-cache \
+	ca-certificates \
+	curl
+
 COPY --from=message /usr/bin/message /message
 ENTRYPOINT [ "/message"  ]

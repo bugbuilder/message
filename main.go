@@ -32,7 +32,7 @@ func message(w http.ResponseWriter, r *http.Request, c *Config) {
 	}
 }
 
-func handler(w http.ResponseWriter, r *http.Request) {
+func service(w http.ResponseWriter, r *http.Request) {
 	if readiness {
 		message(w, r, &c)
 	} else {
@@ -41,17 +41,31 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func fail(w http.ResponseWriter, r *http.Request) {
+	readiness = false
+
+	host, _ := os.Hostname()
+
+	glog.V(3).Infof("Locking service at %s", host)
+}
+
 func live(w http.ResponseWriter, r *http.Request) {
+	hc := r.Header.Get("HEALTHCHECK")
+	host, _ := os.Hostname()
+
 	if readiness {
-		glog.V(3).Infof("Liveness probe is alive!!!")
+		glog.V(3).Infof("Liveness probe is alive at %s from %s", host, hc)
 		w.WriteHeader(http.StatusOK)
 	} else {
-		glog.V(3).Infof("Liveness probe is waiting for Readiness")
+		glog.V(3).Infof("Liveness probe is waiting for Readiness at %s from %s", host, hc)
 		w.WriteHeader(http.StatusServiceUnavailable)
 	}
 }
 
 func ready(w http.ResponseWriter, r *http.Request) {
+	hc := r.Header.Get("HEALTHCHECK")
+	host, _ := os.Hostname()
+
 	var status Ready
 	if readiness {
 		status = Ready{
@@ -60,14 +74,14 @@ func ready(w http.ResponseWriter, r *http.Request) {
 		}
 
 		w.WriteHeader(http.StatusOK)
-		glog.V(3).Infof("everything is going well")
+		glog.V(3).Infof("everything is going well at %s from %s", host, hc)
 	} else {
 		status = Ready{
 			"Unknow",
 			"Unknow",
 		}
 
-		glog.V(3).Infof("Readiness is working")
+		glog.V(3).Infof("Readiness is working at %s from %s", host, hc)
 		w.WriteHeader(http.StatusServiceUnavailable)
 	}
 
@@ -121,9 +135,10 @@ func main() {
 		glog.Fatal(err)
 	}
 
-	http.HandleFunc("/", handler)
+	http.HandleFunc("/", service)
 	http.HandleFunc("/live", live)
 	http.HandleFunc("/ready", ready)
+	http.HandleFunc("/fail", fail)
 
 	go func() {
 		time.Sleep(time.Second * time.Duration(*rStart))
