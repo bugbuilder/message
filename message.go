@@ -10,8 +10,9 @@ import (
 
 // Message represent the message from the host
 type Message struct {
-	Host   string   `json:"host"`
-	Quotes []string `json:"quotes"`
+	Version string   `json:"version"`
+	Host    string   `json:"host"`
+	Quotes  []string `json:"quotes"`
 }
 
 func builder(c *Config) Message {
@@ -26,6 +27,7 @@ func builder(c *Config) Message {
 	}
 
 	return Message{
+		NewInfo().Version,
 		host,
 		quotes,
 	}
