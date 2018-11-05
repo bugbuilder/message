@@ -1,11 +1,14 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"flag"
 	"fmt"
 	"net/http"
 	"os"
+	"os/signal"
+	"syscall"
 	"time"
 
 	"github.com/golang/glog"
@@ -135,16 +138,42 @@ func main() {
 		glog.Fatal(err)
 	}
 
-	http.HandleFunc("/", service)
-	http.HandleFunc("/live", live)
-	http.HandleFunc("/ready", ready)
-	http.HandleFunc("/fail", fail)
-
 	go func() {
 		time.Sleep(time.Second * time.Duration(*rStart))
 		readiness = true
 	}()
 
-	glog.V(1).Infof("Running on http://localhost:%v", p)
-	glog.Fatal(http.ListenAndServe(fmt.Sprintf(":%v", p), nil))
+	srv := &http.Server{Addr: fmt.Sprintf(":%s", p)}
+
+	http.HandleFunc("/", service)
+	http.HandleFunc("/live", live)
+	http.HandleFunc("/ready", ready)
+	http.HandleFunc("/fail", fail)
+
+	signals := make(chan os.Signal)
+	signal.Notify(signals, syscall.SIGINT, syscall.SIGTERM)
+
+	go func() {
+		glog.V(1).Infof("Running on http://localhost:%s", p)
+		if err := srv.ListenAndServe(); err != nil {
+			glog.V(4).Infof("HTTP server ListenAndServe: %v", err)
+		}
+	}()
+
+	<-signals
+	glog.V(4).Infoln("Stopping server gracefully")
+
+	graceTimeOut := 5 * time.Second
+
+	ctx, cancel := context.WithTimeout(context.Background(), graceTimeOut)
+	defer cancel()
+	if err := srv.Shutdown(ctx); err != nil {
+		if ctx.Err() == context.DeadlineExceeded {
+			glog.V(4).Infof("Wait server shutdown is over due to: %s", err)
+			err = srv.Close()
+			if err != nil {
+				glog.Error(err)
+			}
+		}
+	}
 }
